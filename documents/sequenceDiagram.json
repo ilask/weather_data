@@ -1,0 +1,29 @@
+{
+  "key": "sequenceDiagram",
+  "value": [
+    {
+      "id": "気象データ自動取得機能",
+      "value": "{\n    \"mermaid\": \"sequenceDiagram\\n    actor User\\n    participant Frontend\\n    participant Backend\\n    participant WeatherAPI\\n    participant DB\\n\\n    User->>Frontend: 気象データ取得設定画面を開く\\n    Frontend->>Backend: 取得設定情報を要求\\n    Backend->>DB: 現在の設定を取得\\n    DB-->>Backend: 設定情報を返却\\n    Backend-->>Frontend: 設定情報を返却\\n    Frontend-->>User: 設定画面を表示\\n\\n    User->>Frontend: 取得設定を変更\\n    Frontend->>Backend: 新しい設定を保存\\n    Backend->>DB: 設定を更新\\n    DB-->>Backend: 更新完了\\n    Backend-->>Frontend: 保存完了を通知\\n    Frontend-->>User: 設定完了を表示\\n\\n    Note over Backend,WeatherAPI: 定期実行\\n    Backend->>WeatherAPI: 気象データをリクエスト\\n    alt 成功\\n        WeatherAPI-->>Backend: 気象データを返却\\n        Backend->>DB: データを保存\\n        DB-->>Backend: 保存完了\\n    else 失敗\\n        WeatherAPI-->>Backend: エラー\\n        Backend->>Backend: リトライ処理\\n        Backend->>WeatherAPI: 再リクエスト\\n        WeatherAPI-->>Backend: 気象データを返却\\n        Backend->>DB: データを保存\\n        DB-->>Backend: 保存完了\\n    end\\n\\n    Backend->>DB: 実行ログを記録\\n    DB-->>Backend: 記録完了\"\n}"
+    },
+    {
+      "id": "データ形式変換・正規化機能",
+      "value": "{\n    \"mermaid\": \"sequenceDiagram\\n    autonumber\\n    User->>Frontend: データ変換設定画面にアクセス\\n    Frontend->>Backend: 変換設定データを要求\\n    Backend->>DB: weather_dataテーブルから\\n    DB-->>Backend: データを返却\\n    Backend-->>Frontend: 設定データを返却\\n    Frontend-->>User: 設定画面を表示\\n    User->>Frontend: データ変換ルールを設定\\n    Frontend->>Backend: 変換ルールを送信\\n    Backend->>Backend: 変換処理実行\\n    Backend->>DB: 変換済みデータを保存\\n    DB-->>Backend: 保存完了通知\\n    Backend->>DB: data_quality_reportsに\\n    DB-->>Backend: 品質レポート保存完了\\n    Backend->>Backend: 欠損値検出と補完処理\\n    Backend-->>Frontend: 処理結果を返却\\n    Frontend-->>User: 変換結果を表示\\n    Note over Backend: 異常値検出時は\\n    Backend->>DB: system_logsに記録\\n    DB-->>Backend: ログ記録完了\"\n}"
+    },
+    {
+      "id": "データベース構築・管理機能",
+      "value": "{\n    \"mermaid\": \"sequenceDiagram\\n    autonumber\\n    User->>Frontend: バックアップ設定を入力\\n    Frontend->>Backend: バックアップリクエスト送信\\n    Backend->>DB: 対象データ抽出クエリ実行\\n    DB-->>Backend: 対象データ返却\\n    Backend->>Backend: バックアップファイル作成\\n    Backend->>外部ストレージ: バックアップファイル保存\\n    Backend->>DB: バックアップ履歴登録\\n    DB-->>Backend: 登録完了\\n    Backend-->>Frontend: バックアップ完了通知\\n    Frontend-->>User: 完了メッセージ表示\\n    loop 定期チェック\\n        Backend->>DB: データ整合性チェック実行\\n        DB-->>Backend: チェック結果返却\\n        Backend->>DB: 整合性レポート保存\\n        alt 不整合検出時\\n            Backend-->>Frontend: 警告通知送信\\n            Frontend-->>User: 警告メッセージ表示\\n        end\\n    end\\n    loop 自動アーカイブ\\n        Backend->>DB: 古いデータ抽出\\n        DB-->>Backend: 対象データ返却\\n        Backend->>外部ストレージ: アーカイブファイル保存\\n        Backend->>DB: 元データ削除\\n        DB-->>Backend: 削除完了\\n        Backend->>DB: アーカイブログ記録\\n    end\"\n}"
+    },
+    {
+      "id": "API提供機能",
+      "value": "{\n    \"mermaid\": \"sequenceDiagram\\n    autonumber\\n    User->>Frontend: APIデータ要求画面を表示\\n    Frontend->>Backend: API認証トークン確認\\n    Backend->>DB: トークン情報照会\\n    DB->>Backend: トークン有効性応答\\n    Backend->>Frontend: 認証結果返却\\n    Frontend->>User: API利用画面表示\\n    User->>Frontend: 気象データ取得リクエスト\\n    Frontend->>Backend: データ取得API呼出\\n    Backend->>Backend: レート制限チェック\\n    Backend->>DB: アクセスログ記録\\n    Backend->>DB: 気象データ取得\\n    DB->>Backend: 気象データ返却\\n    Backend->>Frontend: データレスポンス\\n    Frontend->>User: 気象データ表示\\n    alt 大量データの場合\\n        Backend->>Backend: 非同期エクスポート処理\\n        Backend->>DB: エクスポート状態保存\\n        Backend->>User: 処理開始通知\\n        Note over Backend,User: エクスポート完了時にメール通知\\n    end\"\n}"
+    },
+    {
+      "id": "スケジューリング機能",
+      "value": "{\n    \"mermaid\": \"sequenceDiagram\\n    autonumber\\n    User->>Frontend: タスクスケジュール設定画面を表示\\n    Frontend->>Backend: タスク一覧取得リクエスト\\n    Backend->>DB: SELECT * FROM system_logs\\n    DB->>Backend: タスクログデータ\\n    Backend->>Frontend: タスク一覧データ\\n    Frontend->>User: タスク一覧表示\\n    User->>Frontend: 新規タスクスケジュール設定\\n    Frontend->>Backend: タスク登録リクエスト\\n    Backend->>DB: INSERT INTO system_logs\\n    DB->>Backend: 登録完了\\n    Backend->>Frontend: 登録結果\\n    Frontend->>User: 登録完了表示\\n    loop タスク実行監視\\n        Backend->>DB: SELECT FROM system_logs\\n        DB->>Backend: 実行ログ\\n        Backend->>Frontend: 実行状況更新\\n        Frontend->>User: 実行状況表示更新\\n    end\\n    alt タスク実行エラー検出\\n        Backend->>Frontend: エラー通知\\n        Frontend->>User: エラーアラート表示\\n    end\"\n}"
+    },
+    {
+      "id": "ログ管理機能",
+      "value": "{\n    \"mermaid\": \"sequenceDiagram\\n    actor User\\n    participant Frontend\\n    participant Backend\\n    participant DB\\n    User->>Frontend: ログ管理画面にアクセス\\n    Frontend->>Backend: ログデータ取得要求\\n    Backend->>DB: system_logsテーブル照会\\n    DB-->>Backend: システムログ返却\\n    Backend->>DB: api_access_logsテーブル照会\\n    DB-->>Backend: APIアクセスログ返却\\n    Backend-->>Frontend: ログデータ返却\\n    Frontend-->>User: ログ一覧表示\\n    Note over Frontend,Backend: 異常検知時の処理\\n    Backend->>Backend: ログ分析による異常検知\\n    Backend->>DB: 異常内容をsystem_logsに記録\\n    Backend->>Frontend: 異常通知送信\\n    Frontend-->>User: 異常アラート表示\"\n}"
+    }
+  ]
+}

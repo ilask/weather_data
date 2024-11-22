@@ -1,0 +1,185 @@
+{
+  "key": "tableDefinition",
+  "value": [
+    {
+      "id": "TAB-001",
+      "table": "weather_data",
+      "column": "id",
+      "dataType": "uuid",
+      "regulation": "PRIMARY KEY, NOT NULL",
+      "defaultValue": "gen_random_uuid()",
+      "foreignKey": "",
+      "description": "気象データの一意識別子"
+    },
+    {
+      "id": "TAB-002",
+      "table": "weather_data",
+      "column": "area_code",
+      "dataType": "varchar(6)",
+      "regulation": "NOT NULL",
+      "defaultValue": "",
+      "foreignKey": "",
+      "description": "気象庁が定義する地域コード"
+    },
+    {
+      "id": "TAB-003",
+      "table": "weather_data",
+      "column": "weather_data",
+      "dataType": "jsonb",
+      "regulation": "NOT NULL",
+      "defaultValue": "{\"temperature\": 25.5, \"precipitation\": 0, \"wind_speed\": 3.2, \"humidity\": 65}",
+      "foreignKey": "",
+      "description": "気象観測データ（気温、降水量、風速、湿度など）"
+    },
+    {
+      "id": "TAB-004",
+      "table": "weather_data",
+      "column": "created_at",
+      "dataType": "timestamp with time zone",
+      "regulation": "NOT NULL",
+      "defaultValue": "CURRENT_TIMESTAMP",
+      "foreignKey": "",
+      "description": "データ登録日時"
+    },
+    {
+      "id": "TAB-005",
+      "table": "api_access_logs",
+      "column": "id",
+      "dataType": "uuid",
+      "regulation": "PRIMARY KEY, NOT NULL",
+      "defaultValue": "gen_random_uuid()",
+      "foreignKey": "",
+      "description": "APIアクセスログの一意識別子"
+    },
+    {
+      "id": "TAB-006",
+      "table": "api_access_logs",
+      "column": "client_id",
+      "dataType": "varchar(255)",
+      "regulation": "NOT NULL",
+      "defaultValue": "",
+      "foreignKey": "",
+      "description": "APIクライアントID"
+    },
+    {
+      "id": "TAB-007",
+      "table": "api_access_logs",
+      "column": "request_info",
+      "dataType": "jsonb",
+      "regulation": "NOT NULL",
+      "defaultValue": "{\"method\": \"GET\", \"path\": \"/api/v1/weather\", \"params\": {\"area_code\": \"130000\"}, \"ip_address\": \"192.168.1.1\"}",
+      "foreignKey": "",
+      "description": "APIリクエスト情報"
+    },
+    {
+      "id": "TAB-008",
+      "table": "api_access_logs",
+      "column": "accessed_at",
+      "dataType": "timestamp with time zone",
+      "regulation": "NOT NULL",
+      "defaultValue": "CURRENT_TIMESTAMP",
+      "foreignKey": "",
+      "description": "アクセス日時"
+    },
+    {
+      "id": "TAB-009",
+      "table": "system_logs",
+      "column": "id",
+      "dataType": "uuid",
+      "regulation": "PRIMARY KEY, NOT NULL",
+      "defaultValue": "gen_random_uuid()",
+      "foreignKey": "",
+      "description": "システムログの一意識別子"
+    },
+    {
+      "id": "TAB-010",
+      "table": "system_logs",
+      "column": "log_level",
+      "dataType": "varchar(10)",
+      "regulation": "NOT NULL",
+      "defaultValue": "'INFO'",
+      "foreignKey": "",
+      "description": "ログレベル（INFO、WARN、ERROR等）"
+    },
+    {
+      "id": "TAB-011",
+      "table": "system_logs",
+      "column": "message",
+      "dataType": "text",
+      "regulation": "NOT NULL",
+      "defaultValue": "",
+      "foreignKey": "",
+      "description": "ログメッセージ"
+    },
+    {
+      "id": "TAB-012",
+      "table": "system_logs",
+      "column": "error_details",
+      "dataType": "jsonb",
+      "regulation": "",
+      "defaultValue": "{\"error_code\": \"E001\", \"stack_trace\": \"Error details...\", \"additional_info\": {}}",
+      "foreignKey": "",
+      "description": "エラー詳細情報"
+    },
+    {
+      "id": "TAB-013",
+      "table": "system_logs",
+      "column": "created_at",
+      "dataType": "timestamp with time zone",
+      "regulation": "NOT NULL",
+      "defaultValue": "CURRENT_TIMESTAMP",
+      "foreignKey": "",
+      "description": "ログ作成日時"
+    },
+    {
+      "id": "TAB-014",
+      "table": "data_quality_reports",
+      "column": "id",
+      "dataType": "uuid",
+      "regulation": "PRIMARY KEY, NOT NULL",
+      "defaultValue": "gen_random_uuid()",
+      "foreignKey": "",
+      "description": "データ品質レポートの一意識別子"
+    },
+    {
+      "id": "TAB-015",
+      "table": "data_quality_reports",
+      "column": "report_date",
+      "dataType": "date",
+      "regulation": "NOT NULL",
+      "defaultValue": "CURRENT_DATE",
+      "foreignKey": "",
+      "description": "レポート対象日"
+    },
+    {
+      "id": "TAB-016",
+      "table": "data_quality_reports",
+      "column": "quality_metrics",
+      "dataType": "jsonb",
+      "regulation": "NOT NULL",
+      "defaultValue": "{\"total_records\": 1440, \"missing_values\": 2, \"anomalies\": 1, \"completeness_rate\": 99.8}",
+      "foreignKey": "",
+      "description": "品質メトリクス情報"
+    },
+    {
+      "id": "TAB-017",
+      "table": "data_quality_reports",
+      "column": "issues_found",
+      "dataType": "jsonb",
+      "regulation": "",
+      "defaultValue": "[{\"type\": \"missing_value\", \"timestamp\": \"2024-01-01T12:00:00Z\", \"field\": \"temperature\"}]",
+      "foreignKey": "",
+      "description": "検出された問題の詳細"
+    },
+    {
+      "id": "TAB-018",
+      "table": "data_quality_reports",
+      "column": "created_at",
+      "dataType": "timestamp with time zone",
+      "regulation": "NOT NULL",
+      "defaultValue": "CURRENT_TIMESTAMP",
+      "foreignKey": "",
+      "description": "レポート作成日時"
+    }
+  ]
+}

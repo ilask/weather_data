@@ -1,0 +1,6 @@
+{
+  "key": "erDiagram",
+  "value": {
+    "mermaid": "erDiagram\n    weather_data {\n        UUID id PK\n        VARCHAR area_code\n        JSONB weather_data\n        TIMESTAMP created_at\n    }\n    api_access_logs {\n        UUID id PK\n        VARCHAR client_id\n        JSONB request_info\n        TIMESTAMP accessed_at\n    }\n    system_logs {\n        UUID id PK\n        VARCHAR log_level\n        TEXT message\n        JSONB error_details\n        TIMESTAMP created_at\n    }\n    data_quality_reports {\n        UUID id PK\n        DATE report_date\n        JSONB quality_metrics\n        JSONB issues_found\n        TIMESTAMP created_at\n    }\n    weather_data ||--o{ api_access_logs : logs_access\n    weather_data ||--o{ system_logs : logs_errors\n    weather_data ||--o{ data_quality_reports : reports_quality"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "key": "systemArchitecture",
+  "value": {
+    "mermaid": "graph TD\n    subgraph Frontend\n        UI_Admin[システム運用管理者UI]\n        UI_Dev[AI開発者UI]\n        UI_Analyst[データ分析担当者UI]\n    end\n\n    subgraph Backend\n        API_Gateway[APIゲートウェイ]\n        Auth[認証認可サービス]\n        TaskScheduler[タスクスケジューラ]\n        DataProcessor[データ処理サービス]\n        DataValidator[データ検証サービス]\n        LogManager[ログ管理サービス]\n        BackupService[バックアップサービス]\n    end\n\n    subgraph Database\n        MainDB[メインデータベース]\n        LogDB[ログデータベース]\n        ArchiveDB[アーカイブデータベース]\n    end\n\n    subgraph ExternalServices\n        WeatherAPI[気象庁API]\n        NotificationService[通知サービス]\n    end\n\n    UI_Admin --> API_Gateway\n    UI_Dev --> API_Gateway\n    UI_Analyst --> API_Gateway\n\n    API_Gateway --> Auth\n    API_Gateway --> DataProcessor\n    API_Gateway --> TaskScheduler\n\n    DataProcessor --> WeatherAPI\n    DataProcessor --> DataValidator\n    DataProcessor --> MainDB\n\n    TaskScheduler --> DataProcessor\n    TaskScheduler --> BackupService\n\n    LogManager --> LogDB\n    LogManager --> NotificationService\n\n    BackupService --> MainDB\n    BackupService --> ArchiveDB\n\n    DataValidator --> MainDB\n    DataValidator --> LogManager"
+  }
+}

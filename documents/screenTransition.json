@@ -1,0 +1,29 @@
+{
+  "key": "screenTransition",
+  "value": [
+    {
+      "id": "気象データ自動取得機能",
+      "value": "{\n    \"mermaid\": \"graph LR\\n    Login[ログイン画面] --> Dashboard[運用管理ダッシュボード]\\n    Dashboard --> DataConfig[データ取得設定画面]\\n    Dashboard --> MonitorScreen[データ取得モニタリング画面]\\n    DataConfig --> RegionSetting[地域コード設定画面]\\n    DataConfig --> ScheduleSetting[取得スケジュール設定画面]\\n    DataConfig --> ItemSetting[取得項目設定画面]\\n    MonitorScreen --> ErrorLog[エラーログ画面]\\n    MonitorScreen --> RetryStatus[リトライステータス画面]\\n    ErrorLog --> RetryConfig[リトライ設定画面]\\n    RetryStatus --> RetryConfig\"\n}"
+    },
+    {
+      "id": "データ形式変換・正規化機能",
+      "value": "{\n    \"mermaid\": \"graph LR\\n    Login[ログイン画面] --> Main[メインメニュー]\\n    Main --> Format[データ変換設定画面]\\n    Main --> Quality[データ品質管理画面]\\n    Main --> Report[品質レポート画面]\\n    Format --> Convert[データ変換実行画面]\\n    Format --> Rule[変換ルール設定画面]\\n    Quality --> Check[品質チェック実行画面]\\n    Quality --> Missing[欠損値処理設定画面]\\n    Quality --> Param[品質基準パラメータ設定画面]\\n    Report --> Daily[日次レポート一覧画面]\\n    Report --> Alert[アラート履歴画面]\\n    Daily --> Detail[レポート詳細画面]\\n    Alert --> Setting[通知設定画面]\\n    Convert --> Result[変換結果確認画面]\\n    Check --> Status[チェック結果確認画面]\"\n}"
+    },
+    {
+      "id": "データベース構築・管理機能",
+      "value": "{\n    \"mermaid\": \"graph LR\\n    Login[ログイン画面] --> Dashboard[運用管理ダッシュボード]\\n    Dashboard --> DataSave[データ保存管理画面]\\n    Dashboard --> BackupMng[バックアップ管理画面]\\n    Dashboard --> ArchiveMng[アーカイブ管理画面]\\n    Dashboard --> ConsistencyCheck[データ整合性チェック画面]\\n    DataSave --> SaveConfig[保存設定画面]\\n    DataSave --> SaveStatus[保存状況モニター画面]\\n    BackupMng --> BackupConfig[バックアップ設定画面]\\n    BackupMng --> BackupStatus[バックアップ状況画面]\\n    BackupMng --> BackupHistory[バックアップ履歴画面]\\n    ArchiveMng --> ArchiveConfig[アーカイブ設定画面]\\n    ArchiveMng --> ArchiveStatus[アーカイブ状況画面]\\n    ArchiveMng --> ArchiveHistory[アーカイブ履歴画面]\\n    ConsistencyCheck --> CheckConfig[チェック設定画面]\\n    ConsistencyCheck --> CheckResult[チェック結果画面]\\n    ConsistencyCheck --> ErrorList[エラーリスト画面]\"\n}"
+    },
+    {
+      "id": "API提供機能",
+      "value": "{\n    \"mermaid\": \"graph LR\\n    Login[ログイン画面] --> Dashboard[API管理ダッシュボード]\\n    Dashboard --> TokenManage[APIトークン管理画面]\\n    Dashboard --> RateLimit[レート制限設定画面]\\n    Dashboard --> ApiDoc[API仕様書画面]\\n    Dashboard --> ExportSetting[データエクスポート設定画面]\\n    TokenManage --> TokenCreate[トークン発行画面]\\n    TokenManage --> TokenList[トークン一覧画面]\\n    ExportSetting --> ExportStatus[エクスポート状況確認画面]\\n    ExportStatus --> ExportResult[エクスポート結果画面]\\n    RateLimit --> RateMonitor[レート制限モニタリング画面]\\n    RateLimit --> RateConfig[レート制限設定詳細画面]\"\n}"
+    },
+    {
+      "id": "スケジューリング機能",
+      "value": "{\n    \"mermaid\": \"graph LR\\n    Login[ログイン画面] --> TaskList[タスク一覧画面]\\n    TaskList --> TaskCreate[タスク新規作成画面]\\n    TaskList --> TaskEdit[タスク編集画面]\\n    TaskList --> TaskDetail[タスク詳細画面]\\n    TaskDetail --> ExecutionHistory[実行履歴画面]\\n    TaskList --> MonitoringDashboard[監視ダッシュボード画面]\\n    MonitoringDashboard --> ErrorList[エラー一覧画面]\\n    MonitoringDashboard --> ExecutionStatus[実行状況画面]\\n    ExecutionStatus --> ExecutionDetail[実行詳細画面]\\n    TaskList --> ScheduleCalendar[スケジュールカレンダー画面]\\n    ScheduleCalendar --> TaskDetail\"\n\n}"
+    },
+    {
+      "id": "ログ管理機能",
+      "value": "{\n    \"mermaid\": \"graph LR\\n    Login[ログイン画面] --> Dashboard[運用管理ダッシュボード]\\n    Dashboard --> LogViewer[ログ閲覧画面]\\n    Dashboard --> AccessLog[アクセスログ画面]\\n    Dashboard --> AlertConfig[異常検知設定画面]\\n    LogViewer --> LogDetail[ログ詳細画面]\\n    LogViewer --> LogSearch[ログ検索画面]\\n    AccessLog --> AccessDetail[アクセス詳細画面]\\n    AccessLog --> AccessStats[アクセス統計画面]\\n    AlertConfig --> AlertList[アラート一覧画面]\\n    AlertConfig --> NotifyConfig[通知設定画面]\\n    AlertList --> AlertDetail[アラート詳細画面]\\n    AlertList --> AlertHistory[アラート履歴画面]\"\n}"
+    }
+  ]
+}

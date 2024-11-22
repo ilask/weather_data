@@ -1,0 +1,152 @@
+{
+  "key": "commonComponent",
+  "value": [
+    {
+      "id": "COM-001",
+      "category": "共通",
+      "fileName": "Header.tsx",
+      "description": "全画面共通のヘッダーコンポーネント。ロゴ、メニュー、ユーザー情報を表示",
+      "props": "{title: string, user: UserInfo, onLogout: () => void}",
+      "screensIds": [
+        "SCR-001",
+        "SCR-002",
+        "SCR-003",
+        "SCR-004",
+        "SCR-005",
+        "SCR-006",
+        "SCR-007",
+        "SCR-008",
+        "SCR-009",
+        "SCR-010"
+      ]
+    },
+    {
+      "id": "COM-002",
+      "category": "共通",
+      "fileName": "Footer.tsx",
+      "description": "全画面共通のフッターコンポーネント。コピーライトとサポート情報を表示",
+      "props": "{copyright: string}",
+      "screensIds": [
+        "SCR-001"
+      ]
+    },
+    {
+      "id": "COM-003",
+      "category": "共通",
+      "fileName": "Sidebar.tsx",
+      "description": "サイドバーナビゲーションコンポーネント。メニュー項目と画面遷移機能を提供",
+      "props": "{menuItems: MenuItem[], activeItem: string, onMenuSelect: (item: string) => void}",
+      "screensIds": [
+        "SCR-002",
+        "SCR-003",
+        "SCR-004",
+        "SCR-005",
+        "SCR-006",
+        "SCR-007",
+        "SCR-008",
+        "SCR-009",
+        "SCR-010"
+      ]
+    },
+    {
+      "id": "COM-004",
+      "category": "認証",
+      "fileName": "AuthForm.tsx",
+      "description": "認証フォームコンポーネント。ログイン機能を提供",
+      "props": "{onSubmit: (credentials: LoginCredentials) => void, error: string}",
+      "screensIds": [
+        "SCR-001"
+      ]
+    },
+    {
+      "id": "COM-005",
+      "category": "運用管理",
+      "fileName": "StatusPanel.tsx",
+      "description": "システム状態表示パネルコンポーネント。メトリクスとステータスを表示",
+      "props": "{metrics: SystemMetrics, status: SystemStatus}",
+      "screensIds": [
+        "SCR-002"
+      ]
+    },
+    {
+      "id": "COM-006",
+      "category": "設定",
+      "fileName": "ConfigForm.tsx",
+      "description": "各種設定フォームコンポーネント。設定項目の入力と保存機能を提供",
+      "props": "{config: ConfigData, onSave: (config: ConfigData) => void}",
+      "screensIds": [
+        "SCR-003"
+      ]
+    },
+    {
+      "id": "COM-007",
+      "category": "モニタリング",
+      "fileName": "MonitoringPanel.tsx",
+      "description": "データ取得状況モニタリングパネルコンポーネント",
+      "props": "{status: MonitoringStatus, errors: ErrorLog[], onRetry: () => void}",
+      "screensIds": [
+        "SCR-004"
+      ]
+    },
+    {
+      "id": "COM-008",
+      "category": "データ処理",
+      "fileName": "ConversionForm.tsx",
+      "description": "データ変換ルール設定フォームコンポーネント",
+      "props": "{rules: ConversionRule[], onSave: (rules: ConversionRule[]) => void}",
+      "screensIds": [
+        "SCR-005"
+      ]
+    },
+    {
+      "id": "COM-009",
+      "category": "品質管理",
+      "fileName": "QualityCheckPanel.tsx",
+      "description": "データ品質チェックパネルコンポーネント",
+      "props": "{qualityData: QualityMetrics, onCheck: () => void, onFix: (issue: QualityIssue) => void}",
+      "screensIds": [
+        "SCR-006"
+      ]
+    },
+    {
+      "id": "COM-010",
+      "category": "バックアップ",
+      "fileName": "BackupPanel.tsx",
+      "description": "バックアップ管理パネルコンポーネント",
+      "props": "{backupHistory: BackupLog[], onBackup: () => void, onRestore: (backup: BackupLog) => void}",
+      "screensIds": [
+        "SCR-007"
+      ]
+    },
+    {
+      "id": "COM-011",
+      "category": "API管理",
+      "fileName": "TokenManager.tsx",
+      "description": "APIトークン管理コンポーネント",
+      "props": "{tokens: ApiToken[], onGenerate: () => void, onRevoke: (token: string) => void}",
+      "screensIds": [
+        "SCR-008"
+      ]
+    },
+    {
+      "id": "COM-012",
+      "category": "API管理",
+      "fileName": "RateLimitConfig.tsx",
+      "description": "APIレート制限設定コンポーネント",
+      "props": "{limits: RateLimit[], onUpdate: (limits: RateLimit[]) => void}",
+      "screensIds": [
+        "SCR-009"
+      ]
+    },
+    {
+      "id": "COM-013",
+      "category": "タスク管理",
+      "fileName": "TaskList.tsx",
+      "description": "タスク一覧表示と管理コンポーネント",
+      "props": "{tasks: Task[], onTaskUpdate: (task: Task) => void, onTaskDelete: (taskId: string) => void}",
+      "screensIds": [
+        "SCR-010"
+      ]
+    }
+  ]
+}

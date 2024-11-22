@@ -1,0 +1,264 @@
+{
+  "key": "screensList",
+  "value": [
+    {
+      "id": "SCR-001",
+      "category": "共通",
+      "screenName": "ログイン画面",
+      "description": "システムへのログイン認証を行う画面",
+      "Screen components": "ログインフォーム、エラーメッセージ表示領域、ログインボタン",
+      "operatingProcedure": "1. ユーザーIDとパスワードを入力\n2. ログインボタンをクリック\n3. 認証成功時はダッシュボードへ遷移、失敗時はエラーメッセージを表示",
+      "user": "全ユーザー",
+      "accessRight": "ゲスト",
+      "fileName": "login.tsx",
+      "getData": "",
+      "postData": "[{table:'api_access_logs',items:['client_id','request_info']}]",
+      "commonComponent": "['Header.tsx', 'Footer.tsx', 'AuthForm.tsx']",
+      "relatedBackendHandles": [
+        {
+          "id": "BAC-001",
+          "category": "認証・認可",
+          "handleName": "ログイン認証処理",
+          "description": "ユーザー認証を行い、JWTトークンを発行する",
+          "handleProcedure": "1. リクエストから認証情報を取得\n2. Supabaseの認証機能を使用してユーザー認証\n3. 認証成功時にJWTトークンを発行\n4. アクセスログを記録\n5. レスポンスを返却",
+          "fileName": "auth-login.ts",
+          "relatedScreen": "SCR-001",
+          "relatedFrontendCode": "```typescript\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react'\nimport { useRouter } from 'next/navigation'\nimport '@testing-library/jest-dom'\nimport Login from '@/pages/login'\nimport axios from 'axios'\n\njest.mock('next/navigation')\njest.mock('axios')\n\ndescribe('ログイン画面', () => {\n  const mockRouter = {\n    push: jest.fn(),\n  }\n  \n  beforeEach(() => {\n    (useRouter as jest.Mock).mockReturnValue(mockRouter)\n    jest.clearAllMocks()\n  })\n\n  it('ログインフォームが正しく表示されること', () => {\n    render(<Login />)\n    \n    expect(screen.getByLabelText('ユーザーID')).toBeInTheDocument()\n    expect(screen.getByLabelText('パスワード')).toBeInTheDocument()\n    expect(screen.getByRole('button', { name: 'ログイン' })).toBeInTheDocument()\n  })\n\n  it('入力値が空の場合にエラーメッセージが表示されること', async () => {\n    render(<Login />)\n    \n    fireEvent.click(screen.getByRole('button', { name: 'ログイン' }))\n    \n    expect(await screen.findByText('ユーザーIDを入力してください')).toBeInTheDocument()\n    expect(await screen.findByText('パスワードを入力してください')).toBeInTheDocument()\n  })\n\n  it('認証成功時にダッシュボードへ遷移すること', async () => {\n    const mockResponse = {\n      data: {\n        token: 'dummy-token',\n        user: { id: 1, name: 'テストユーザー' }\n      }\n    }\n    ;(axios.post as jest.Mock).mockResolvedValueOnce(mockResponse)\n\n    render(<Login />)\n    \n    fireEvent.change(screen.getByLabelText('ユーザーID'), {\n      target: { value: 'testuser' }\n    })\n    fireEvent.change(screen.getByLabelText('パスワード'), {\n      target: { value: 'password123' }\n    })\n    \n    fireEvent.click(screen.getByRole('button', { name: 'ログイン' }))\n\n    await waitFor(() => {\n      expect(mockRouter.push).toHaveBeenCalledWith('/dashboard')\n    })\n  })\n\n  it('認証失敗時にエラーメッセージが表示されること', async () => {\n    const errorMessage = 'ユーザーIDまたはパスワードが間違っています'\n    ;(axios.post as jest.Mock).mockRejectedValueOnce(new Error(errorMessage))\n\n    render(<Login />)\n    \n    fireEvent.change(screen.getByLabelText('ユーザーID'), {\n      target: { value: 'wronguser' }\n    })\n    fireEvent.change(screen.getByLabelText('パスワード'), {\n      target: { value: 'wrongpass' }\n    })\n    \n    fireEvent.click(screen.getByRole('button', { name: 'ログイン' }))\n\n    expect(await screen.findByText(errorMessage)).toBeInTheDocument()\n  })\n\n  it('ヘッダーとフッターが表示されること', () => {\n    render(<Login />)\n    \n    expect(screen.getByTestId('header')).toBeInTheDocument()\n    expect(screen.getByTestId('footer')).toBeInTheDocument()\n  })\n\n  it('パスワード入力フィールドがマスクされていること', () => {\n    render(<Login />)\n    \n    expect(screen.getByLabelText('パスワード')).toHaveAttribute('type', 'password')\n  })\n\n  it('ログイン処理中はボタンが無効化されること', async () => {\n    ;(axios.post as jest.Mock).mockImplementationOnce(() => \n      new Promise(resolve => setTimeout(resolve, 1000))\n    )\n\n    render(<Login />)\n    \n    fireEvent.change(screen.getByLabelText('ユーザーID'), {\n      target: { value: 'testuser' }\n    })\n    fireEvent.change(screen.getByLabelText('パスワード'), {\n      target: { value: 'password123' }\n    })\n    \n    fireEvent.click(screen.getByRole('button', { name: 'ログイン' }))\n\n    expect(screen.getByRole('button', { name: 'ログイン中...' })).toBeDisabled()\n  })\n})\n```"
+        }
+      ]
+    },
+    {
+      "id": "SCR-002",
+      "category": "運用管理",
+      "screenName": "運用管理ダッシュボード",
+      "description": "システム全体の状態を監視・管理するメイン画面",
+      "Screen components": "システム状態サマリー、アラート一覧、タスク実行状況、リソース使用状況グラフ",
+      "operatingProcedure": "1. 各種メトリクスの確認\n2. アラートの確認と対応\n3. 各機能へのナビゲーション",
+      "user": "システム運用管理者",
+      "accessRight": "ログインユーザー",
+      "fileName": "dashboard.tsx",
+      "getData": "[{table:'system_logs',items:['log_level','message','error_details']},{table:'weather_data',items:['created_at']}]",
+      "postData": "",
+      "commonComponent": "['Header.tsx', 'Sidebar.tsx', 'StatusPanel.tsx']",
+      "relatedBackendHandles": [
+        {
+          "id": "BAC-008",
+          "category": "データアーカイブ",
+          "handleName": "古いデータのアーカイブ処理",
+          "description": "1年以上経過した気象データを自動的にアーカイブする",
+          "handleProcedure": "1. アーカイブ対象データの特定\n2. アーカイブファイルの作成\n3. 外部ストレージへの移動\n4. 元データの削除\n5. アーカイブログの記録",
+          "fileName": "data-archive.ts",
+          "relatedScreen": "SCR-002",
+          "relatedFrontendCode": "```typescript\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react';\nimport { jest } from '@jest/globals';\nimport Dashboard from '@/pages/dashboard';\nimport { useRouter } from 'next/navigation';\n\n// モックの定義\njest.mock('next/navigation', () => ({\n  useRouter: jest.fn()\n}));\n\njest.mock('@/components/Header', () => ({\n  __esModule: true,\n  default: ({ title, user, onLogout }: any) => (\n    <div data-testid=\"mock-header\">\n      <span>{title}</span>\n      <span>{user.name}</span>\n      <button onClick={onLogout}>ログアウト</button>\n    </div>\n  )\n}));\n\njest.mock('@/components/Sidebar', () => ({\n  __esModule: true,\n  default: ({ menuItems, activeItem, onMenuSelect }: any) => (\n    <div data-testid=\"mock-sidebar\">\n      {menuItems.map((item: any) => (\n        <button key={item.id} onClick={() => onMenuSelect(item.id)}>\n          {item.label}\n        </button>\n      ))}\n    </div>\n  )\n}));\n\njest.mock('@/components/StatusPanel', () => ({\n  __esModule: true,\n  default: ({ metrics, status }: any) => (\n    <div data-testid=\"mock-status-panel\">\n      <span>CPU使用率: {metrics.cpu}%</span>\n      <span>システム状態: {status}</span>\n    </div>\n  )\n}));\n\n// モックデータ\nconst mockSystemData = {\n  metrics: {\n    cpu: 45,\n    memory: 60,\n    disk: 75\n  },\n  status: \"正常\",\n  alerts: [\n    { id: 1, message: \"警告メッセージ1\", severity: \"warning\" },\n    { id: 2, message: \"エラーメッセージ1\", severity: \"error\" }\n  ],\n  tasks: [\n    { id: 1, name: \"データ取得\", status: \"実行中\" },\n    { id: 2, name: \"バックアップ\", status: \"完了\" }\n  ]\n};\n\ndescribe('Dashboard', () => {\n  beforeEach(() => {\n    (useRouter as jest.Mock).mockImplementation(() => ({\n      push: jest.fn(),\n      pathname: '/dashboard'\n    }));\n\n    global.fetch = jest.fn(() =>\n      Promise.resolve({\n        ok: true,\n        json: () => Promise.resolve(mockSystemData)\n      })\n    ) as jest.Mock;\n  });\n\n  test('ダッシュボードが正しくレンダリングされること', async () => {\n    render(<Dashboard />);\n    \n    await waitFor(() => {\n      expect(screen.getByTestId('mock-header')).toBeInTheDocument();\n      expect(screen.getByTestId('mock-sidebar')).toBeInTheDocument();\n      expect(screen.getByTestId('mock-status-panel')).toBeInTheDocument();\n    });\n  });\n\n  test('システムメトリクスが正しく表示されること', async () => {\n    render(<Dashboard />);\n    \n    await waitFor(() => {\n      expect(screen.getByText(/CPU使用率: 45%/)).toBeInTheDocument();\n      expect(screen.getByText(/システム状態: 正常/)).toBeInTheDocument();\n    });\n  });\n\n  test('アラート一覧が正しく表示されること', async () => {\n    render(<Dashboard />);\n    \n    await waitFor(() => {\n      expect(screen.getByText('警告メッセージ1')).toBeInTheDocument();\n      expect(screen.getByText('エラーメッセージ1')).toBeInTheDocument();\n    });\n  });\n\n  test('タスク実行状況が正しく表示されること', async () => {\n    render(<Dashboard />);\n    \n    await waitFor(() => {\n      expect(screen.getByText('データ取得')).toBeInTheDocument();\n      expect(screen.getByText('バックアップ')).toBeInTheDocument();\n      expect(screen.getByText('実行中')).toBeInTheDocument();\n      expect(screen.getByText('完了')).toBeInTheDocument();\n    });\n  });\n\n  test('エラー時のエラーメッセージが表示されること', async () => {\n    global.fetch = jest.fn(() =>\n      Promise.resolve({\n        ok: false,\n        status: 500\n      })\n    ) as jest.Mock;\n\n    render(<Dashboard />);\n    \n    await waitFor(() => {\n      expect(screen.getByText('システムデータの取得に失敗しました')).toBeInTheDocument();\n    });\n  });\n\n  test('更新ボタンクリックでデータが再取得されること', async () => {\n    render(<Dashboard />);\n    \n    const updateButton = screen.getByText('更新');\n    fireEvent.click(updateButton);\n\n    await waitFor(() => {\n      expect(global.fetch).toHaveBeenCalledTimes(2);\n    });\n  });\n\n  test('ログアウトボタンクリックで適切な処理が実行されること', async () => {\n    const mockPush = jest.fn();\n    (useRouter as jest.Mock).mockImplementation(() => ({\n      push: mockPush\n    }));\n\n    render(<Dashboard />);\n    \n    const logoutButton = screen.getByText('ログアウト');\n    fireEvent.click(logoutButton);\n\n    await waitFor(() => {\n      expect(mockPush).toHaveBeenCalledWith('/login');\n    });\n  });\n});\n```"
+        },
+        {
+          "id": "BAC-009",
+          "category": "監視",
+          "handleName": "システム異常検知処理",
+          "description": "システムの異常を検知し、管理者に通知する",
+          "handleProcedure": "1. システムメトリクスの収集\n2. 異常判定ルールの適用\n3. 異常検知時の詳細分析\n4. 通知メッセージの作成\n5. 管理者への通知送信",
+          "fileName": "system-monitor.ts",
+          "relatedScreen": "SCR-002",
+          "relatedFrontendCode": "```typescript\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react';\nimport { jest } from '@jest/globals';\nimport Dashboard from '@/pages/dashboard';\nimport { useRouter } from 'next/navigation';\n\n// モックの定義\njest.mock('next/navigation', () => ({\n  useRouter: jest.fn()\n}));\n\njest.mock('@/components/Header', () => ({\n  __esModule: true,\n  default: ({ title, user, onLogout }: any) => (\n    <div data-testid=\"mock-header\">\n      <span>{title}</span>\n      <span>{user.name}</span>\n      <button onClick={onLogout}>ログアウト</button>\n    </div>\n  )\n}));\n\njest.mock('@/components/Sidebar', () => ({\n  __esModule: true,\n  default: ({ menuItems, activeItem, onMenuSelect }: any) => (\n    <div data-testid=\"mock-sidebar\">\n      {menuItems.map((item: any) => (\n        <button key={item.id} onClick={() => onMenuSelect(item.id)}>\n          {item.label}\n        </button>\n      ))}\n    </div>\n  )\n}));\n\njest.mock('@/components/StatusPanel', () => ({\n  __esModule: true,\n  default: ({ metrics, status }: any) => (\n    <div data-testid=\"mock-status-panel\">\n      <span>CPU使用率: {metrics.cpu}%</span>\n      <span>システム状態: {status}</span>\n    </div>\n  )\n}));\n\n// モックデータ\nconst mockSystemData = {\n  metrics: {\n    cpu: 45,\n    memory: 60,\n    disk: 75\n  },\n  status: \"正常\",\n  alerts: [\n    { id: 1, message: \"警告メッセージ1\", severity: \"warning\" },\n    { id: 2, message: \"エラーメッセージ1\", severity: \"error\" }\n  ],\n  tasks: [\n    { id: 1, name: \"データ取得\", status: \"実行中\" },\n    { id: 2, name: \"バックアップ\", status: \"完了\" }\n  ]\n};\n\ndescribe('Dashboard', () => {\n  beforeEach(() => {\n    (useRouter as jest.Mock).mockImplementation(() => ({\n      push: jest.fn(),\n      pathname: '/dashboard'\n    }));\n\n    global.fetch = jest.fn(() =>\n      Promise.resolve({\n        ok: true,\n        json: () => Promise.resolve(mockSystemData)\n      })\n    ) as jest.Mock;\n  });\n\n  test('ダッシュボードが正しくレンダリングされること', async () => {\n    render(<Dashboard />);\n    \n    await waitFor(() => {\n      expect(screen.getByTestId('mock-header')).toBeInTheDocument();\n      expect(screen.getByTestId('mock-sidebar')).toBeInTheDocument();\n      expect(screen.getByTestId('mock-status-panel')).toBeInTheDocument();\n    });\n  });\n\n  test('システムメトリクスが正しく表示されること', async () => {\n    render(<Dashboard />);\n    \n    await waitFor(() => {\n      expect(screen.getByText(/CPU使用率: 45%/)).toBeInTheDocument();\n      expect(screen.getByText(/システム状態: 正常/)).toBeInTheDocument();\n    });\n  });\n\n  test('アラート一覧が正しく表示されること', async () => {\n    render(<Dashboard />);\n    \n    await waitFor(() => {\n      expect(screen.getByText('警告メッセージ1')).toBeInTheDocument();\n      expect(screen.getByText('エラーメッセージ1')).toBeInTheDocument();\n    });\n  });\n\n  test('タスク実行状況が正しく表示されること', async () => {\n    render(<Dashboard />);\n    \n    await waitFor(() => {\n      expect(screen.getByText('データ取得')).toBeInTheDocument();\n      expect(screen.getByText('バックアップ')).toBeInTheDocument();\n      expect(screen.getByText('実行中')).toBeInTheDocument();\n      expect(screen.getByText('完了')).toBeInTheDocument();\n    });\n  });\n\n  test('エラー時のエラーメッセージが表示されること', async () => {\n    global.fetch = jest.fn(() =>\n      Promise.resolve({\n        ok: false,\n        status: 500\n      })\n    ) as jest.Mock;\n\n    render(<Dashboard />);\n    \n    await waitFor(() => {\n      expect(screen.getByText('システムデータの取得に失敗しました')).toBeInTheDocument();\n    });\n  });\n\n  test('更新ボタンクリックでデータが再取得されること', async () => {\n    render(<Dashboard />);\n    \n    const updateButton = screen.getByText('更新');\n    fireEvent.click(updateButton);\n\n    await waitFor(() => {\n      expect(global.fetch).toHaveBeenCalledTimes(2);\n    });\n  });\n\n  test('ログアウトボタンクリックで適切な処理が実行されること', async () => {\n    const mockPush = jest.fn();\n    (useRouter as jest.Mock).mockImplementation(() => ({\n      push: mockPush\n    }));\n\n    render(<Dashboard />);\n    \n    const logoutButton = screen.getByText('ログアウト');\n    fireEvent.click(logoutButton);\n\n    await waitFor(() => {\n      expect(mockPush).toHaveBeenCalledWith('/login');\n    });\n  });\n});\n```"
+        }
+      ]
+    },
+    {
+      "id": "SCR-003",
+      "category": "データ取得",
+      "screenName": "データ取得設定画面",
+      "description": "気象データの取得に関する設定を行う画面",
+      "Screen components": "地域設定フォーム、取得項目選択リスト、スケジュール設定パネル",
+      "operatingProcedure": "1. 地域コードの設定\n2. 取得する気象データ項目の選択\n3. 取得スケジュールの設定\n4. 設定の保存",
+      "user": "システム運用管理者",
+      "accessRight": "ログインユーザー",
+      "fileName": "data-config.tsx",
+      "getData": "[{table:'weather_data',items:['area_code','weather_data']}]",
+      "postData": "[{table:'weather_data',items:['area_code','weather_data']}]",
+      "commonComponent": "['Header.tsx', 'Sidebar.tsx', 'ConfigForm.tsx']",
+      "relatedBackendHandles": [
+        {
+          "id": "BAC-002",
+          "category": "気象データ取得",
+          "handleName": "気象データ自動取得処理",
+          "description": "気象庁APIから定期的にデータを取得し、データベースに保存する",
+          "handleProcedure": "1. スケジュールに従って気象庁APIにリクエスト\n2. 取得したデータを標準フォーマットに変換\n3. データ品質チェックの実行\n4. Supabaseにデータを保存\n5. 処理結果をログに記録",
+          "fileName": "weather-fetch.ts",
+          "relatedScreen": "SCR-003",
+          "relatedFrontendCode": "```typescript\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react';\nimport { useRouter } from 'next/navigation';\nimport userEvent from '@testing-library/user-event';\nimport DataConfigScreen from '@/pages/data-config';\nimport '@testing-library/jest-dom';\nimport axios from 'axios';\n\njest.mock('next/navigation', () => ({\n  useRouter: jest.fn(),\n}));\n\njest.mock('@/components/Header', () => {\n  return function MockHeader({ title, onLogout }: { title: string; onLogout: () => void }) {\n    return (\n      <div data-testid=\"mock-header\">\n        <h1>{title}</h1>\n        <button onClick={onLogout}>ログアウト</button>\n      </div>\n    );\n  };\n});\n\njest.mock('@/components/Sidebar', () => {\n  return function MockSidebar({ activeItem }: { activeItem: string }) {\n    return <div data-testid=\"mock-sidebar\">Sidebar: {activeItem}</div>;\n  };\n});\n\njest.mock('@/components/ConfigForm', () => {\n  return function MockConfigForm({ config, onSave }: { config: any; onSave: (data: any) => void }) {\n    return (\n      <div data-testid=\"mock-config-form\">\n        <button onClick={() => onSave(config)}>設定を保存</button>\n      </div>\n    );\n  };\n});\n\nconst mockWeatherConfig = {\n  areaCode: '130000',\n  items: ['temperature', 'rainfall'],\n  schedule: '0 0 * * *'\n};\n\ndescribe('DataConfigScreen', () => {\n  beforeEach(() => {\n    jest.clearAllMocks();\n  });\n\n  it('正しくレンダリングされること', () => {\n    render(<DataConfigScreen />);\n    expect(screen.getByTestId('mock-header')).toBeInTheDocument();\n    expect(screen.getByTestId('mock-sidebar')).toBeInTheDocument();\n    expect(screen.getByTestId('mock-config-form')).toBeInTheDocument();\n  });\n\n  it('地域コードを入力できること', async () => {\n    render(<DataConfigScreen />);\n    const areaCodeInput = screen.getByLabelText('地域コード');\n    await userEvent.type(areaCodeInput, '130000');\n    expect(areaCodeInput).toHaveValue('130000');\n  });\n\n  it('気象データ項目を選択できること', async () => {\n    render(<DataConfigScreen />);\n    const temperatureCheckbox = screen.getByLabelText('気温');\n    const rainfallCheckbox = screen.getByLabelText('降水量');\n    \n    await userEvent.click(temperatureCheckbox);\n    await userEvent.click(rainfallCheckbox);\n    \n    expect(temperatureCheckbox).toBeChecked();\n    expect(rainfallCheckbox).toBeChecked();\n  });\n\n  it('スケジュール設定を入力できること', async () => {\n    render(<DataConfigScreen />);\n    const scheduleInput = screen.getByLabelText('実行スケジュール');\n    await userEvent.type(scheduleInput, '0 0 * * *');\n    expect(scheduleInput).toHaveValue('0 0 * * *');\n  });\n\n  it('設定を保存できること', async () => {\n    const mockAxios = axios as jest.Mocked<typeof axios>;\n    mockAxios.post.mockResolvedValueOnce({ data: { success: true } });\n\n    render(<DataConfigScreen />);\n    \n    const saveButton = screen.getByText('設定を保存');\n    await userEvent.click(saveButton);\n\n    await waitFor(() => {\n      expect(mockAxios.post).toHaveBeenCalledWith('/api/weather-config', expect.any(Object));\n    });\n  });\n\n  it('保存失敗時にエラーメッセージが表示されること', async () => {\n    const mockAxios = axios as jest.Mocked<typeof axios>;\n    mockAxios.post.mockRejectedValueOnce(new Error('設定の保存に失敗しました'));\n\n    render(<DataConfigScreen />);\n    \n    const saveButton = screen.getByText('設定を保存');\n    await userEvent.click(saveButton);\n\n    await waitFor(() => {\n      expect(screen.getByText('設定の保存に失敗しました')).toBeInTheDocument();\n    });\n  });\n\n  it('初期データが正しく読み込まれること', async () => {\n    const mockAxios = axios as jest.Mocked<typeof axios>;\n    mockAxios.get.mockResolvedValueOnce({ data: mockWeatherConfig });\n\n    render(<DataConfigScreen />);\n\n    await waitFor(() => {\n      expect(screen.getByLabelText('地域コード')).toHaveValue('130000');\n      expect(screen.getByLabelText('気温')).toBeChecked();\n      expect(screen.getByLabelText('降水量')).toBeChecked();\n      expect(screen.getByLabelText('実行スケジュール')).toHaveValue('0 0 * * *');\n    });\n  });\n\n  it('フォームのバリデーションが機能すること', async () => {\n    render(<DataConfigScreen />);\n    \n    const saveButton = screen.getByText('設定を保存');\n    await userEvent.click(saveButton);\n\n    await waitFor(() => {\n      expect(screen.getByText('地域コードは必須です')).toBeInTheDocument();\n      expect(screen.getByText('1つ以上の項目を選択してください')).toBeInTheDocument();\n      expect(screen.getByText('スケジュールは必須です')).toBeInTheDocument();\n    });\n  });\n\n  it('ログアウトボタンが機能すること', async () => {\n    const mockRouter = useRouter as jest.Mock;\n    render(<DataConfigScreen />);\n    \n    const logoutButton = screen.getByText('ログアウト');\n    await userEvent.click(logoutButton);\n\n    expect(mockRouter).toHaveBeenCalledWith('/login');\n  });\n});\n```"
+        }
+      ]
+    },
+    {
+      "id": "SCR-004",
+      "category": "データ取得",
+      "screenName": "データ取得モニタリング画面",
+      "description": "気象データの取得状況をリアルタイムで監視する画面",
+      "Screen components": "取得状況一覧、エラー表示領域、リトライステータス表示",
+      "operatingProcedure": "1. データ取得状況の確認\n2. エラー発生時の詳細確認\n3. リトライ操作の実行",
+      "user": "システム運用管理者",
+      "accessRight": "ログインユーザー",
+      "fileName": "monitor.tsx",
+      "getData": "[{table:'system_logs',items:['*']},{table:'weather_data',items:['created_at','weather_data']}]",
+      "postData": "[{table:'system_logs',items:['log_level','message','error_details']}]",
+      "commonComponent": "['Header.tsx', 'Sidebar.tsx', 'MonitoringPanel.tsx']",
+      "relatedBackendHandles": [
+        {
+          "id": "BAC-010",
+          "category": "データエクスポート",
+          "handleName": "大量データエクスポート処理",
+          "description": "大量の気象データを非同期でエクスポートする",
+          "handleProcedure": "1. エクスポートリクエストの受付\n2. データの抽出と形式変換\n3. エクスポートファイルの作成\n4. 外部ストレージへの保存\n5. ダウンロードURLの生成と通知",
+          "fileName": "data-export.ts",
+          "relatedScreen": "SCR-004",
+          "relatedFrontendCode": "```typescript\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react';\nimport { act } from 'react-dom/test-utils';\nimport Monitor from '@/pages/monitor';\nimport '@testing-library/jest-dom';\nimport { jest } from '@jest/globals';\n\n// モックデータ\nconst mockMonitoringData = {\n  status: {\n    isRunning: true,\n    lastUpdate: '2024-01-01T00:00:00Z',\n    processedCount: 100\n  },\n  errors: [\n    {\n      id: 'error1',\n      message: 'データ取得エラー',\n      timestamp: '2024-01-01T00:00:00Z',\n      details: 'API接続タイムアウト'\n    }\n  ]\n};\n\n// コンポーネントのモック\njest.mock('@/components/Header', () => {\n  return function MockHeader({ title, user, onLogout }) {\n    return (\n      <div data-testid=\"mock-header\">\n        <div>{title}</div>\n        <div>{user.name}</div>\n        <button onClick={onLogout}>ログアウト</button>\n      </div>\n    );\n  };\n});\n\njest.mock('@/components/Sidebar', () => {\n  return function MockSidebar({ menuItems, activeItem, onMenuSelect }) {\n    return (\n      <div data-testid=\"mock-sidebar\">\n        {menuItems.map(item => (\n          <button key={item.id} onClick={() => onMenuSelect(item.id)}>\n            {item.label}\n          </button>\n        ))}\n      </div>\n    );\n  };\n});\n\njest.mock('@/components/MonitoringPanel', () => {\n  return function MockMonitoringPanel({ status, errors, onRetry }) {\n    return (\n      <div data-testid=\"mock-monitoring-panel\">\n        <div>ステータス: {status.isRunning ? '実行中' : '停止中'}</div>\n        <div>エラー数: {errors.length}</div>\n        <button onClick={onRetry}>リトライ</button>\n      </div>\n    );\n  };\n});\n\n// APIモック\njest.mock('axios');\n\ndescribe('Monitor画面のテスト', () => {\n  beforeEach(() => {\n    global.axios.get.mockResolvedValue({ data: mockMonitoringData });\n  });\n\n  afterEach(() => {\n    jest.clearAllMocks();\n  });\n\n  it('初期レンダリングが正しく行われること', async () => {\n    await act(async () => {\n      render(<Monitor />);\n    });\n\n    expect(screen.getByTestId('mock-header')).toBeInTheDocument();\n    expect(screen.getByTestId('mock-sidebar')).toBeInTheDocument();\n    expect(screen.getByTestId('mock-monitoring-panel')).toBeInTheDocument();\n  });\n\n  it('モニタリングデータが正しく取得されること', async () => {\n    await act(async () => {\n      render(<Monitor />);\n    });\n\n    await waitFor(() => {\n      expect(global.axios.get).toHaveBeenCalled();\n    });\n\n    expect(screen.getByText('ステータス: 実行中')).toBeInTheDocument();\n    expect(screen.getByText('エラー数: 1')).toBeInTheDocument();\n  });\n\n  it('リトライボタンクリックが正しく動作すること', async () => {\n    const mockRetry = jest.fn();\n    global.axios.post.mockResolvedValueOnce({ data: { success: true } });\n\n    await act(async () => {\n      render(<Monitor />);\n    });\n\n    const retryButton = screen.getByText('リトライ');\n    await act(async () => {\n      fireEvent.click(retryButton);\n    });\n\n    await waitFor(() => {\n      expect(global.axios.post).toHaveBeenCalled();\n    });\n  });\n\n  it('エラー発生時にエラーメッセージが表示されること', async () => {\n    global.axios.get.mockRejectedValueOnce(new Error('API Error'));\n\n    await act(async () => {\n      render(<Monitor />);\n    });\n\n    await waitFor(() => {\n      expect(screen.getByText('データの取得に失敗しました')).toBeInTheDocument();\n    });\n  });\n\n  it('自動更新が正しく動作すること', async () => {\n    jest.useFakeTimers();\n\n    await act(async () => {\n      render(<Monitor />);\n    });\n\n    await act(async () => {\n      jest.advanceTimersByTime(30000);\n    });\n\n    expect(global.axios.get).toHaveBeenCalledTimes(2);\n\n    jest.useRealTimers();\n  });\n\n  it('ログアウトが正しく動作すること', async () => {\n    await act(async () => {\n      render(<Monitor />);\n    });\n\n    const logoutButton = screen.getByText('ログアウト');\n    await act(async () => {\n      fireEvent.click(logoutButton);\n    });\n\n    expect(global.mockNextRouter.push).toHaveBeenCalledWith('/login');\n  });\n\n  it('サイドバーのメニュー選択が正しく動作すること', async () => {\n    await act(async () => {\n      render(<Monitor />);\n    });\n\n    const menuButton = screen.getByText('データ取得設定');\n    await act(async () => {\n      fireEvent.click(menuButton);\n    });\n\n    expect(global.mockNextRouter.push).toHaveBeenCalledWith('/data-config');\n  });\n});\n```"
+        }
+      ]
+    },
+    {
+      "id": "SCR-005",
+      "category": "データ変換",
+      "screenName": "データ変換設定画面",
+      "description": "気象データの変換ルールを設定する画面",
+      "Screen components": "変換ルール設定フォーム、プレビュー表示領域、バリデーション結果表示",
+      "operatingProcedure": "1. データ形式の選択\n2. 変換ルールの設定\n3. プレビューの確認\n4. 設定の保存",
+      "user": "データ分析担当者",
+      "accessRight": "ログインユーザー",
+      "fileName": "format-config.tsx",
+      "getData": "[{table:'weather_data',items:['weather_data']}]",
+      "postData": "[{table:'weather_data',items:['weather_data']}]",
+      "commonComponent": "['Header.tsx', 'Sidebar.tsx', 'ConversionForm.tsx']",
+      "relatedBackendHandles": [
+        {
+          "id": "BAC-003",
+          "category": "データ変換",
+          "handleName": "大量データ変換処理",
+          "description": "大量の気象データに対して非同期で変換処理を実行する",
+          "handleProcedure": "1. 変換リクエストを受付\n2. バックグラウンドジョブとして変換処理を実行\n3. 変換済みデータの保存\n4. 処理状況の更新\n5. 完了通知の送信",
+          "fileName": "data-conversion.ts",
+          "relatedScreen": "SCR-005",
+          "relatedFrontendCode": "```typescript\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react';\nimport { jest } from '@jest/globals';\nimport FormatConfig from '@/pages/format-config';\nimport userEvent from '@testing-library/user-event';\n\n// モックの定義\njest.mock('@/components/Header', () => {\n  return function DummyHeader() {\n    return <div data-testid=\"header\">Header</div>;\n  };\n});\n\njest.mock('@/components/Sidebar', () => {\n  return function DummySidebar() {\n    return <div data-testid=\"sidebar\">Sidebar</div>;\n  };\n});\n\njest.mock('@/components/ConversionForm', () => {\n  return function DummyConversionForm({ onSave }: { onSave: (rules: any[]) => void }) {\n    return (\n      <div data-testid=\"conversion-form\">\n        <button onClick={() => onSave([])}>Save</button>\n      </div>\n    );\n  };\n});\n\nconst mockAxios = {\n  get: jest.fn(),\n  post: jest.fn()\n};\n\njest.mock('axios', () => ({\n  __esModule: true,\n  default: mockAxios\n}));\n\ndescribe('FormatConfig', () => {\n  beforeEach(() => {\n    jest.clearAllMocks();\n    mockAxios.get.mockResolvedValue({ \n      data: { \n        rules: [],\n        previewData: []\n      } \n    });\n    mockAxios.post.mockResolvedValue({ \n      data: { \n        success: true \n      } \n    });\n  });\n\n  it('共通コンポーネントが正しく表示されること', () => {\n    render(<FormatConfig />);\n    expect(screen.getByTestId('header')).toBeInTheDocument();\n    expect(screen.getByTestId('sidebar')).toBeInTheDocument();\n    expect(screen.getByTestId('conversion-form')).toBeInTheDocument();\n  });\n\n  it('初期データの読み込みが正しく行われること', async () => {\n    render(<FormatConfig />);\n    await waitFor(() => {\n      expect(mockAxios.get).toHaveBeenCalledWith('/api/conversion-rules');\n    });\n  });\n\n  it('プレビューデータが正しく表示されること', async () => {\n    mockAxios.get.mockResolvedValueOnce({\n      data: {\n        previewData: [\n          { id: 1, data: 'テストデータ1' },\n          { id: 2, data: 'テストデータ2' }\n        ]\n      }\n    });\n\n    render(<FormatConfig />);\n    \n    await waitFor(() => {\n      expect(screen.getByText('テストデータ1')).toBeInTheDocument();\n      expect(screen.getByText('テストデータ2')).toBeInTheDocument();\n    });\n  });\n\n  it('変換ルールの保存が正しく行われること', async () => {\n    render(<FormatConfig />);\n    \n    const saveButton = screen.getByText('Save');\n    await userEvent.click(saveButton);\n\n    await waitFor(() => {\n      expect(mockAxios.post).toHaveBeenCalledWith('/api/conversion-rules', {\n        rules: []\n      });\n    });\n  });\n\n  it('エラー時にエラーメッセージが表示されること', async () => {\n    mockAxios.post.mockRejectedValueOnce(new Error('保存に失敗しました'));\n    \n    render(<FormatConfig />);\n    \n    const saveButton = screen.getByText('Save');\n    await userEvent.click(saveButton);\n\n    await waitFor(() => {\n      expect(screen.getByText('エラーが発生しました：保存に失敗しました')).toBeInTheDocument();\n    });\n  });\n\n  it('バリデーションエラーが正しく表示されること', async () => {\n    mockAxios.post.mockRejectedValueOnce({\n      response: {\n        data: {\n          errors: ['必須項目が未入力です']\n        }\n      }\n    });\n\n    render(<FormatConfig />);\n    \n    const saveButton = screen.getByText('Save');\n    await userEvent.click(saveButton);\n\n    await waitFor(() => {\n      expect(screen.getByText('必須項目が未入力です')).toBeInTheDocument();\n    });\n  });\n\n  it('プレビュー更新が正しく行われること', async () => {\n    render(<FormatConfig />);\n    \n    const updateButton = screen.getByText('プレビュー更新');\n    await userEvent.click(updateButton);\n\n    await waitFor(() => {\n      expect(mockAxios.get).toHaveBeenCalledWith('/api/preview-data');\n    });\n  });\n\n  it('ローディング状態が正しく表示されること', async () => {\n    mockAxios.get.mockImplementationOnce(() => \n      new Promise(resolve => setTimeout(resolve, 1000))\n    );\n\n    render(<FormatConfig />);\n    \n    expect(screen.getByText('読み込み中...')).toBeInTheDocument();\n\n    await waitFor(() => {\n      expect(screen.queryByText('読み込み中...')).not.toBeInTheDocument();\n    });\n  });\n});\n```"
+        }
+      ]
+    },
+    {
+      "id": "SCR-006",
+      "category": "データ品質",
+      "screenName": "データ品質管理画面",
+      "description": "気象データの品質をチェックし管理する画面",
+      "Screen components": "品質メトリクス表示、異常値検出結果、欠損値一覧",
+      "operatingProcedure": "1. 品質チェックの実行\n2. 検出された問題の確認\n3. 補正処理の実行",
+      "user": "データ分析担当者",
+      "accessRight": "ログインユーザー",
+      "fileName": "quality-management.tsx",
+      "getData": "[{table:'data_quality_reports',items:['*']},{table:'weather_data',items:['weather_data']}]",
+      "postData": "[{table:'data_quality_reports',items:['quality_metrics','issues_found']}]",
+      "commonComponent": "['Header.tsx', 'Sidebar.tsx', 'QualityCheckPanel.tsx']",
+      "relatedBackendHandles": [
+        {
+          "id": "BAC-006",
+          "category": "データ品質",
+          "handleName": "データ品質レポート生成処理",
+          "description": "日次でデータ品質レポートを生成する",
+          "handleProcedure": "1. 対象データの抽出\n2. 品質メトリクスの計算\n3. 異常値・欠損値の検出\n4. レポートの生成と保存\n5. 問題検出時の通知送信",
+          "fileName": "quality-report-generate.ts",
+          "relatedScreen": "SCR-006",
+          "relatedFrontendCode": "```typescript\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react';\nimport { act } from 'react-dom/test-utils';\nimport userEvent from '@testing-library/user-event';\nimport QualityManagement from '@/pages/quality-management';\n\n// モックの定義\njest.mock('@/components/Header', () => ({\n  __esModule: true,\n  default: () => <div data-testid=\"mock-header\">Header</div>\n}));\n\njest.mock('@/components/Sidebar', () => ({\n  __esModule: true, \n  default: () => <div data-testid=\"mock-sidebar\">Sidebar</div>\n}));\n\njest.mock('@/components/QualityCheckPanel', () => ({\n  __esModule: true,\n  default: ({qualityData, onCheck, onFix}: any) => (\n    <div data-testid=\"mock-quality-panel\">\n      <button onClick={onCheck}>品質チェック実行</button>\n      <button onClick={() => onFix({id: '1'})}>補正実行</button>\n      <div>{JSON.stringify(qualityData)}</div>\n    </div>\n  )\n}));\n\nconst mockQualityData = {\n  metrics: {\n    completeness: 0.95,\n    accuracy: 0.98,\n    consistency: 0.97\n  },\n  issues: [\n    {\n      id: '1',\n      type: 'missing_value',\n      description: '欠損値検出'\n    }\n  ]\n};\n\ndescribe('QualityManagement', () => {\n  beforeEach(() => {\n    jest.clearAllMocks();\n    global.fetch = jest.fn(() =>\n      Promise.resolve({\n        ok: true,\n        json: () => Promise.resolve(mockQualityData),\n      })\n    ) as jest.Mock;\n  });\n\n  test('初期レンダリング時に品質データを取得して表示する', async () => {\n    render(<QualityManagement />);\n\n    await waitFor(() => {\n      expect(screen.getByTestId('mock-header')).toBeInTheDocument();\n      expect(screen.getByTestId('mock-sidebar')).toBeInTheDocument();\n      expect(screen.getByTestId('mock-quality-panel')).toBeInTheDocument();\n    });\n  });\n\n  test('品質チェックボタンクリック時にチェック処理が実行される', async () => {\n    const user = userEvent.setup();\n    render(<QualityManagement />);\n\n    const checkButton = await screen.findByText('品質チェック実行');\n    await user.click(checkButton);\n\n    await waitFor(() => {\n      expect(global.fetch).toHaveBeenCalledWith('/api/quality/check', {\n        method: 'POST',\n      });\n    });\n  });\n\n  test('補正実行ボタンクリック時に補正処理が実行される', async () => {\n    const user = userEvent.setup();\n    render(<QualityManagement />);\n\n    const fixButton = await screen.findByText('補正実行');\n    await user.click(fixButton);\n\n    await waitFor(() => {\n      expect(global.fetch).toHaveBeenCalledWith('/api/quality/fix', {\n        method: 'POST',\n        headers: {\n          'Content-Type': 'application/json',\n        },\n        body: JSON.stringify({id: '1'})\n      });\n    });\n  });\n\n  test('エラー発生時にエラーメッセージが表示される', async () => {\n    global.fetch = jest.fn(() =>\n      Promise.reject(new Error('API Error'))\n    ) as jest.Mock;\n\n    render(<QualityManagement />);\n\n    await waitFor(() => {\n      expect(screen.getByText('データの取得に失敗しました')).toBeInTheDocument();\n    });\n  });\n\n  test('品質メトリクスが正しく表示される', async () => {\n    render(<QualityManagement />);\n\n    await waitFor(() => {\n      expect(screen.getByText(/0\\.95/)).toBeInTheDocument();\n      expect(screen.getByText(/0\\.98/)).toBeInTheDocument();\n      expect(screen.getByText(/0\\.97/)).toBeInTheDocument();\n    });\n  });\n\n  test('異常値検出結果が表示される', async () => {\n    render(<QualityManagement />);\n\n    await waitFor(() => {\n      expect(screen.getByText('欠損値検出')).toBeInTheDocument();\n    });\n  });\n\n  test('ローディング状態が表示される', async () => {\n    render(<QualityManagement />);\n    expect(screen.getByText('読み込み中...')).toBeInTheDocument();\n\n    await waitFor(() => {\n      expect(screen.queryByText('読み込み中...')).not.toBeInTheDocument();\n    });\n  });\n\n  test('品質チェック実行中の状態が表示される', async () => {\n    const user = userEvent.setup();\n    render(<QualityManagement />);\n\n    const checkButton = await screen.findByText('品質チェック実行');\n    await user.click(checkButton);\n\n    expect(screen.getByText('品質チェック実行中...')).toBeInTheDocument();\n\n    await waitFor(() => {\n      expect(screen.queryByText('品質チェック実行中...')).not.toBeInTheDocument();\n    });\n  });\n\n  test('補正処理実行中の状態が表示される', async () => {\n    const user = userEvent.setup();\n    render(<QualityManagement />);\n\n    const fixButton = await screen.findByText('補正実行');\n    await user.click(fixButton);\n\n    expect(screen.getByText('補正処理実行中...')).toBeInTheDocument();\n\n    await waitFor(() => {\n      expect(screen.queryByText('補正処理実行中...')).not.toBeInTheDocument();\n    });\n  });\n});\n```"
+        }
+      ]
+    },
+    {
+      "id": "SCR-007",
+      "category": "バックアップ",
+      "screenName": "バックアップ管理画面",
+      "description": "データベースのバックアップを管理する画面",
+      "Screen components": "バックアップ設定パネル、実行履歴一覧、リストア操作パネル",
+      "operatingProcedure": "1. バックアップスケジュールの設定\n2. 手動バックアップの実行\n3. バックアップ履歴の確認\n4. リストア操作の実行",
+      "user": "システム運用管理者",
+      "accessRight": "ログインユーザー",
+      "fileName": "backup-management.tsx",
+      "getData": "[{table:'weather_data',items:['*']},{table:'system_logs',items:['*']}]",
+      "postData": "[{table:'system_logs',items:['log_level','message']}]",
+      "commonComponent": "['Header.tsx', 'Sidebar.tsx', 'BackupPanel.tsx']",
+      "relatedBackendHandles": [
+        {
+          "id": "BAC-004",
+          "category": "バックアップ",
+          "handleName": "自動バックアップ処理",
+          "description": "データベースの定期バックアップを実行する",
+          "handleProcedure": "1. バックアップ対象データの特定\n2. バックアップファイルの作成\n3. 外部ストレージへの保存\n4. バックアップ履歴の更新\n5. 結果通知の送信",
+          "fileName": "backup-execute.ts",
+          "relatedScreen": "SCR-007",
+          "relatedFrontendCode": "```typescript\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react';\nimport { act } from 'react-dom/test-utils';\nimport userEvent from '@testing-library/user-event';\nimport BackupManagement from '@/pages/backup-management';\nimport '@testing-library/jest-dom';\n\n// モックデータ\nconst mockBackupHistory = [\n  {\n    id: '1',\n    timestamp: '2024-01-01 10:00:00',\n    status: 'success',\n    size: '1.2GB',\n    type: 'auto'\n  },\n  {\n    id: '2', \n    timestamp: '2024-01-02 10:00:00',\n    status: 'failed',\n    size: '0B',\n    type: 'manual'\n  }\n];\n\nconst mockScheduleConfig = {\n  enabled: true,\n  frequency: 'daily',\n  time: '00:00',\n  retention: 7\n};\n\n// モック関数\njest.mock('next/navigation', () => ({\n  useRouter: () => ({\n    push: jest.fn(),\n  }),\n}));\n\njest.mock('@/components/Header', () => {\n  return function DummyHeader() {\n    return <div data-testid=\"mock-header\">Header</div>;\n  };\n});\n\njest.mock('@/components/Sidebar', () => {\n  return function DummySidebar() {\n    return <div data-testid=\"mock-sidebar\">Sidebar</div>;\n  };\n});\n\njest.mock('@/components/BackupPanel', () => {\n  return function DummyBackupPanel({ backupHistory, onBackup, onRestore }) {\n    return (\n      <div data-testid=\"mock-backup-panel\">\n        <button onClick={onBackup}>バックアップ実行</button>\n        <button onClick={() => onRestore(mockBackupHistory[0])}>リストア実行</button>\n      </div>\n    );\n  };\n});\n\ndescribe('BackupManagement', () => {\n  beforeEach(() => {\n    // APIモックのリセット\n    jest.clearAllMocks();\n    \n    // Axiosモック\n    global.axios.get.mockImplementation((url) => {\n      if (url.includes('/api/backup/history')) {\n        return Promise.resolve({ data: mockBackupHistory });\n      }\n      if (url.includes('/api/backup/config')) {\n        return Promise.resolve({ data: mockScheduleConfig });\n      }\n      return Promise.reject(new Error('Not found'));\n    });\n\n    global.axios.post.mockImplementation((url) => {\n      if (url.includes('/api/backup/execute')) {\n        return Promise.resolve({ data: { status: 'success' } });\n      }\n      if (url.includes('/api/backup/restore')) {\n        return Promise.resolve({ data: { status: 'success' } });\n      }\n      return Promise.reject(new Error('Not found'));\n    });\n  });\n\n  it('初期表示時にバックアップ履歴とスケジュール設定を取得して表示すること', async () => {\n    render(<BackupManagement />);\n\n    // ヘッダーとサイドバーが表示されていること\n    expect(screen.getByTestId('mock-header')).toBeInTheDocument();\n    expect(screen.getByTestId('mock-sidebar')).toBeInTheDocument();\n    \n    // バックアップパネルが表示されていること\n    expect(screen.getByTestId('mock-backup-panel')).toBeInTheDocument();\n\n    // APIが呼ばれていること\n    await waitFor(() => {\n      expect(global.axios.get).toHaveBeenCalledWith('/api/backup/history');\n      expect(global.axios.get).toHaveBeenCalledWith('/api/backup/config');\n    });\n  });\n\n  it('手動バックアップを実行できること', async () => {\n    render(<BackupManagement />);\n\n    const backupButton = screen.getByText('バックアップ実行');\n    await act(async () => {\n      fireEvent.click(backupButton);\n    });\n\n    await waitFor(() => {\n      expect(global.axios.post).toHaveBeenCalledWith('/api/backup/execute', expect.any(Object));\n    });\n  });\n\n  it('リストアを実行できること', async () => {\n    render(<BackupManagement />);\n\n    const restoreButton = screen.getByText('リストア実行');\n    await act(async () => {\n      fireEvent.click(restoreButton);\n    });\n\n    await waitFor(() => {\n      expect(global.axios.post).toHaveBeenCalledWith('/api/backup/restore', {\n        backupId: mockBackupHistory[0].id\n      });\n    });\n  });\n\n  it('エラー時にエラーメッセージを表示すること', async () => {\n    global.axios.get.mockRejectedValueOnce(new Error('バックアップ履歴の取得に失敗しました'));\n\n    render(<BackupManagement />);\n\n    await waitFor(() => {\n      expect(screen.getByText('エラーが発生しました')).toBeInTheDocument();\n    });\n  });\n\n  it('ローディング中はローディング表示されること', async () => {\n    render(<BackupManagement />);\n\n    expect(screen.getByText('読み込み中...')).toBeInTheDocument();\n\n    await waitFor(() => {\n      expect(screen.queryByText('読み込み中...')).not.toBeInTheDocument();\n    });\n  });\n});\n```"
+        }
+      ]
+    },
+    {
+      "id": "SCR-008",
+      "category": "API管理",
+      "screenName": "APIトークン管理画面",
+      "description": "APIアクセストークンを管理する画面",
+      "Screen components": "トークン発行フォーム、トークン一覧、権限設定パネル",
+      "operatingProcedure": "1. 新規トークンの発行\n2. 既存トークンの無効化\n3. 権限の設定\n4. 利用状況の確認",
+      "user": "システム運用管理者",
+      "accessRight": "ログインユーザー",
+      "fileName": "api-token.tsx",
+      "getData": "[{table:'api_access_logs',items:['client_id','request_info']}]",
+      "postData": "[{table:'api_access_logs',items:['client_id','request_info']}]",
+      "commonComponent": "['Header.tsx', 'Sidebar.tsx', 'TokenManager.tsx']",
+      "relatedBackendHandles": []
+    },
+    {
+      "id": "SCR-009",
+      "category": "API管理",
+      "screenName": "レート制限設定画面",
+      "description": "APIのレート制限を設定する画面",
+      "Screen components": "レート制限設定フォーム、制限状況モニター、ブロックリスト",
+      "operatingProcedure": "1. レート制限値の設定\n2. 制限対象の設定\n3. 現在の制限状況確認",
+      "user": "システム運用管理者",
+      "accessRight": "ログインユーザー",
+      "fileName": "rate-limit.tsx",
+      "getData": "[{table:'api_access_logs',items:['*']}]",
+      "postData": "[{table:'api_access_logs',items:['client_id','request_info']}]",
+      "commonComponent": "['Header.tsx', 'Sidebar.tsx', 'RateLimitConfig.tsx']",
+      "relatedBackendHandles": [
+        {
+          "id": "BAC-005",
+          "category": "API管理",
+          "handleName": "レート制限チェック処理",
+          "description": "APIアクセスのレート制限チェックと制御を行う",
+          "handleProcedure": "1. リクエスト元の識別\n2. アクセス頻度のカウント\n3. 制限値との比較\n4. 制限超過時の制御\n5. アクセスログの記録",
+          "fileName": "rate-limit-check.ts",
+          "relatedScreen": "SCR-009",
+          "relatedFrontendCode": "```typescript\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react';\nimport userEvent from '@testing-library/user-event';\nimport RateLimit from '@/pages/rate-limit';\nimport { useRouter } from 'next/navigation';\nimport '@testing-library/jest-dom';\nimport axios from 'axios';\n\njest.mock('next/navigation', () => ({\n  useRouter: jest.fn()\n}));\n\nconst mockRouter = {\n  push: jest.fn(),\n  replace: jest.fn(),\n  prefetch: jest.fn()\n};\n\ndescribe('RateLimit画面のテスト', () => {\n  beforeEach(() => {\n    (useRouter as jest.Mock).mockReturnValue(mockRouter);\n    jest.clearAllMocks();\n  });\n\n  const mockLimitData = {\n    limits: [\n      { clientId: 'client1', requestsPerMinute: 60, isBlocked: false },\n      { clientId: 'client2', requestsPerMinute: 30, isBlocked: true }\n    ],\n    currentStatus: {\n      totalRequests: 1000,\n      blockedClients: 1\n    }\n  };\n\n  test('画面の初期表示が正しく行われる', async () => {\n    (axios.get as jest.Mock).mockResolvedValueOnce({ data: mockLimitData });\n\n    render(<RateLimit />);\n\n    await waitFor(() => {\n      expect(screen.getByText('レート制限設定')).toBeInTheDocument();\n      expect(screen.getByText('制限状況モニター')).toBeInTheDocument();\n      expect(screen.getByText('ブロックリスト')).toBeInTheDocument();\n    });\n  });\n\n  test('レート制限値の更新が正しく動作する', async () => {\n    (axios.get as jest.Mock).mockResolvedValueOnce({ data: mockLimitData });\n    (axios.put as jest.Mock).mockResolvedValueOnce({ success: true });\n\n    render(<RateLimit />);\n\n    const limitInput = await screen.findByLabelText('制限値（リクエスト/分）');\n    await userEvent.clear(limitInput);\n    await userEvent.type(limitInput, '100');\n\n    const saveButton = screen.getByText('保存');\n    await userEvent.click(saveButton);\n\n    await waitFor(() => {\n      expect(axios.put).toHaveBeenCalledWith('/api/rate-limits', expect.any(Object));\n    });\n  });\n\n  test('クライアントのブロック/解除が正しく動作する', async () => {\n    (axios.get as jest.Mock).mockResolvedValueOnce({ data: mockLimitData });\n    (axios.post as jest.Mock).mockResolvedValueOnce({ success: true });\n\n    render(<RateLimit />);\n\n    const blockButton = await screen.findByText('ブロック解除');\n    await userEvent.click(blockButton);\n\n    await waitFor(() => {\n      expect(axios.post).toHaveBeenCalledWith('/api/client-block', expect.any(Object));\n    });\n  });\n\n  test('エラー時にエラーメッセージが表示される', async () => {\n    (axios.get as jest.Mock).mockRejectedValueOnce(new Error('API Error'));\n\n    render(<RateLimit />);\n\n    await waitFor(() => {\n      expect(screen.getByText('データの取得に失敗しました')).toBeInTheDocument();\n    });\n  });\n\n  test('現在の制限状況が正しく表示される', async () => {\n    (axios.get as jest.Mock).mockResolvedValueOnce({ data: mockLimitData });\n\n    render(<RateLimit />);\n\n    await waitFor(() => {\n      expect(screen.getByText('総リクエスト数: 1000')).toBeInTheDocument();\n      expect(screen.getByText('ブロック中のクライアント: 1')).toBeInTheDocument();\n    });\n  });\n\n  test('制限値の入力バリデーションが正しく機能する', async () => {\n    (axios.get as jest.Mock).mockResolvedValueOnce({ data: mockLimitData });\n\n    render(<RateLimit />);\n\n    const limitInput = await screen.findByLabelText('制限値（リクエスト/分）');\n    await userEvent.clear(limitInput);\n    await userEvent.type(limitInput, '-1');\n\n    const saveButton = screen.getByText('保存');\n    await userEvent.click(saveButton);\n\n    expect(screen.getByText('0以上の値を入力してください')).toBeInTheDocument();\n  });\n\n  test('クライアントIDでの検索フィルタリングが正しく動作する', async () => {\n    (axios.get as jest.Mock).mockResolvedValueOnce({ data: mockLimitData });\n\n    render(<RateLimit />);\n\n    const searchInput = await screen.findByPlaceholderText('クライアントID検索');\n    await userEvent.type(searchInput, 'client1');\n\n    await waitFor(() => {\n      expect(screen.getByText('client1')).toBeInTheDocument();\n      expect(screen.queryByText('client2')).not.toBeInTheDocument();\n    });\n  });\n});\n```"
+        }
+      ]
+    },
+    {
+      "id": "SCR-010",
+      "category": "タスク管理",
+      "screenName": "タスク一覧画面",
+      "description": "スケジュールされたタスクを管理する画面",
+      "Screen components": "タスク一覧表、スケジュール表示、実行状態表示",
+      "operatingProcedure": "1. タスク一覧の確認\n2. 新規タスクの作成\n3. 既存タスクの編集/削除",
+      "user": "システム運用管理者",
+      "accessRight": "ログインユーザー",
+      "fileName": "tasks.tsx",
+      "getData": "[{table:'system_logs',items:['*']}]",
+      "postData": "[{table:'system_logs',items:['log_level','message']}]",
+      "commonComponent": "['Header.tsx', 'Sidebar.tsx', 'TaskList.tsx']",
+      "relatedBackendHandles": [
+        {
+          "id": "BAC-007",
+          "category": "タスク管理",
+          "handleName": "定期タスク実行処理",
+          "description": "スケジュールされたタスクを定期的に実行する",
+          "handleProcedure": "1. 実行予定タスクの取得\n2. タスク実行条件の確認\n3. タスクの実行\n4. 実行結果の記録\n5. 異常時の通知送信",
+          "fileName": "task-execute.ts",
+          "relatedScreen": "SCR-010",
+          "relatedFrontendCode": "```typescript\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react';\nimport { jest } from '@jest/globals';\nimport Tasks from '@/pages/tasks';\nimport userEvent from '@testing-library/user-event';\nimport '@testing-library/jest-dom';\n\n// モックデータ\nconst mockTasks = [\n  {\n    id: '1',\n    name: 'データ取得タスク',\n    schedule: '0 0 * * *', \n    status: 'active',\n    lastRun: '2024-01-01T00:00:00Z',\n    nextRun: '2024-01-02T00:00:00Z'\n  },\n  {\n    id: '2',\n    name: 'バックアップタスク',\n    schedule: '0 12 * * *',\n    status: 'inactive',\n    lastRun: '2024-01-01T12:00:00Z',\n    nextRun: '2024-01-02T12:00:00Z'\n  }\n];\n\nconst mockApiResponse = {\n  data: mockTasks,\n  status: 200\n};\n\n// モック\njest.mock('axios', () => ({\n  get: jest.fn(() => Promise.resolve(mockApiResponse)),\n  post: jest.fn(() => Promise.resolve({ status: 200 })),\n  put: jest.fn(() => Promise.resolve({ status: 200 })),\n  delete: jest.fn(() => Promise.resolve({ status: 200 }))\n}));\n\ndescribe('Tasks画面のテスト', () => {\n  beforeEach(() => {\n    jest.clearAllMocks();\n  });\n\n  test('画面の初期表示が正しく行われる', async () => {\n    render(<Tasks />);\n    \n    expect(screen.getByText('タスク一覧')).toBeInTheDocument();\n    await waitFor(() => {\n      expect(screen.getByText('データ取得タスク')).toBeInTheDocument();\n      expect(screen.getByText('バックアップタスク')).toBeInTheDocument();\n    });\n  });\n\n  test('新規タスク作成ボタンが機能する', async () => {\n    render(<Tasks />);\n    \n    const newTaskButton = screen.getByText('新規タスク作成');\n    fireEvent.click(newTaskButton);\n\n    expect(screen.getByText('タスク作成')).toBeInTheDocument();\n    expect(screen.getByLabelText('タスク名')).toBeInTheDocument();\n    expect(screen.getByLabelText('スケジュール')).toBeInTheDocument();\n  });\n\n  test('タスクの編集が正しく機能する', async () => {\n    render(<Tasks />);\n\n    await waitFor(() => {\n      const editButton = screen.getAllByText('編集')[0];\n      fireEvent.click(editButton);\n    });\n\n    const nameInput = screen.getByLabelText('タスク名');\n    await userEvent.clear(nameInput);\n    await userEvent.type(nameInput, '更新後のタスク名');\n\n    const saveButton = screen.getByText('保存');\n    fireEvent.click(saveButton);\n\n    await waitFor(() => {\n      expect(global.axios.put).toHaveBeenCalled();\n    });\n  });\n\n  test('タスクの削除が正しく機能する', async () => {\n    render(<Tasks />);\n\n    await waitFor(() => {\n      const deleteButton = screen.getAllByText('削除')[0];\n      fireEvent.click(deleteButton);\n    });\n\n    const confirmButton = screen.getByText('確認');\n    fireEvent.click(confirmButton);\n\n    await waitFor(() => {\n      expect(global.axios.delete).toHaveBeenCalled();\n    });\n  });\n\n  test('タスクの状態切り替えが機能する', async () => {\n    render(<Tasks />);\n\n    await waitFor(() => {\n      const statusToggle = screen.getAllByRole('switch')[0];\n      fireEvent.click(statusToggle);\n    });\n\n    await waitFor(() => {\n      expect(global.axios.put).toHaveBeenCalled();\n    });\n  });\n\n  test('エラー時にエラーメッセージが表示される', async () => {\n    global.axios.get.mockRejectedValueOnce(new Error('APIエラー'));\n    \n    render(<Tasks />);\n\n    await waitFor(() => {\n      expect(screen.getByText('データの取得に失敗しました')).toBeInTheDocument();\n    });\n  });\n\n  test('タスク詳細の表示が正しく機能する', async () => {\n    render(<Tasks />);\n\n    await waitFor(() => {\n      const taskName = screen.getByText('データ取得タスク');\n      fireEvent.click(taskName);\n    });\n\n    expect(screen.getByText('タスク詳細')).toBeInTheDocument();\n    expect(screen.getByText('最終実行:')).toBeInTheDocument();\n    expect(screen.getByText('次回実行:')).toBeInTheDocument();\n  });\n\n  test('検索フィルターが正しく機能する', async () => {\n    render(<Tasks />);\n\n    const searchInput = screen.getByPlaceholderText('タスク名で検索');\n    await userEvent.type(searchInput, 'データ取得');\n\n    await waitFor(() => {\n      expect(screen.getByText('データ取得タスク')).toBeInTheDocument();\n      expect(screen.queryByText('バックアップタスク')).not.toBeInTheDocument();\n    });\n  });\n\n  test('ソート機能が正しく動作する', async () => {\n    render(<Tasks />);\n\n    const sortButton = screen.getByText('名前順');\n    fireEvent.click(sortButton);\n\n    await waitFor(() => {\n      const taskNames = screen.getAllByTestId('task-name');\n      expect(taskNames[0]).toHaveTextContent('バックアップタスク');\n      expect(taskNames[1]).toHaveTextContent('データ取得タスク');\n    });\n  });\n\n  test('ページネーションが正しく機能する', async () => {\n    const manyTasks = Array(20).fill(null).map((_, i) => ({\n      id: String(i),\n      name: `タスク${i}`,\n      schedule: '0 0 * * *',\n      status: 'active',\n      lastRun: '2024-01-01T00:00:00Z',\n      nextRun: '2024-01-02T00:00:00Z'\n    }));\n\n    global.axios.get.mockResolvedValueOnce({ data: manyTasks, status: 200 });\n\n    render(<Tasks />);\n\n    await waitFor(() => {\n      const nextPageButton = screen.getByLabelText('次のページ');\n      fireEvent.click(nextPageButton);\n    });\n\n    expect(screen.getByText('タスク10')).toBeInTheDocument();\n  });\n});\n```"
+        }
+      ]
+    }
+  ]
+}
